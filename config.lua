@@ -25,11 +25,53 @@ vim.g.clipboard = {
     ["*"] = "win32yank.exe -o --lf",
   },
 }
+
+------------------------------ functions ------------------------------------------
+--
+--
+local function dadbod_config()
+  local status_ok, cmp = pcall(require, "nvim-cmp")
+  if status_ok then
+    vim.api.nvim_create_autocmd("FileType", {
+      pattern = { "sql", "mysql", "plsql" },
+      callback = function()
+        cmp.setup.buffer({ sources = { { name = "vim-dadbod-completion" } } })
+      end,
+    })
+  end
+end
+
+lvim.lsp.automatic_configuration.skipped_servers = vim.tbl_filter(function(server)
+  return server ~= "sqls"
+end, lvim.lsp.automatic_configuration.skipped_servers)
+------------------------------PLUGINS---------------------------------------------------------------
 lvim.plugins = {
+  {
+    'norcalli/nvim-colorizer.lua',
+    --   lazy = false,
+    --   config = function()
+    -- end
+  },
+  {
+
+    'theprimeagen/harpoon'
+
+  },
   'ThePrimeagen/vim-be-good',
   { 'glepnir/zephyr-nvim',
   },
-  { "dasupradyumna/midnight.nvim" }
+  { "dasupradyumna/midnight.nvim" },
+  {
+    "tpope/vim-dadbod",
+    dependencies = {
+      { "kristijanhusak/vim-dadbod-completion" },
+      {
+        "kristijanhusak/vim-dadbod-ui",
+        config = dadbod_config()
+      },
+    },
+    cmd = { "DBUI", "DBUIToggle" },
+  },
 
 }
 local logo = [[
@@ -56,18 +98,19 @@ lvim.colorscheme = "midnight"
 
 
 
-lvim.lsp.automatic_configuration.skipped_servers = vim.tbl_filter(function(server)
-  return server ~= "sqlls"
-end, lvim.lsp.automatic_configuration.skipped_servers)
+-- lvim.lsp.automatic_configuration.skipped_servers = vim.tbl_filter(function(server)
+--   return server ~= "sqlls"
+-- end, lvim.lsp.automatic_configuration.skipped_servers)
 
-require("lvim.lsp.manager").setup("sqlls", {
-  cmd = { "sql-language-server", "up", "--method", "stdio" },
-  filetypes = { "sql", "mysql" },
-  root_dir = function() return vim.loop.cwd() end,
-})
+-- require("lvim.lsp.manager").setup("sqlls", {
+--   cmd = { "sql-language-server", "up", "--method", "stdio" },
+--   filetypes = { "sql", "mysql" },
+--   root_dir = function() return vim.loop.cwd() end,
+-- })
 
 
 
+require("colorizer").setup()
 
 -- Parameters --
 
@@ -81,3 +124,24 @@ vim.o.relativenumber = true
 -- Nzzzv
 vim.keymap.set("n", "<C-d>", "<C-d>zz")
 vim.keymap.set("n", "<C-u>", "<C-u>zz")
+
+
+-- Harpoon setup
+local harpoon_mark = require("harpoon.mark")
+local harpoon_ui = require("harpoon.ui")
+vim.keymap.set("n", "²", harpoon_mark.add_file)
+vim.keymap.set("n", "<C-e>", harpoon_ui.toggle_quick_menu)
+-- Options to do next-prev too
+vim.keymap.set("n", "<leader>²&", function() harpoon_ui.nav_file(1) end)
+vim.keymap.set("n", '<leader>²é', function() harpoon_ui.nav_file(2) end)
+vim.keymap.set("n", '<leader>²"', function() harpoon_ui.nav_file(3) end)
+vim.keymap.set("n", '<leader>²(', function() harpoon_ui.nav_file(4) end)
+
+
+require 'lspconfig'.sqlls.setup {
+  -- capabilities = capabilities,
+  filetypes = { 'sql' },
+  root_dir = function(_)
+    return vim.loop.cwd()
+  end,
+}
