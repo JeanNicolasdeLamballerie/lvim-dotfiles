@@ -1,2 +1,7 @@
-Lunarvim config !
-(Check them out !)[https://www.lunarvim.org/]
+# Dotfiles...
+
+## Lunarvim config !
+[Check them out !](https://www.lunarvim.org/)
+
+- Harpoon
+- clear background
